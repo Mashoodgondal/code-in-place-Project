@@ -1038,6 +1038,67 @@ if __name__ == "__main__":
     #                          padx=20,
     #                          pady=8,
     #                          cursor='hand2',
+    #     #            cursor='hand2',
+    #                       command=status_window.destroy)
+    #     ok_btn.pack(pady=(0, 20))
+        
+    #     # Auto-close after 3 seconds for success messages
+    #     if msg_type == 'success':
+    #         status_window.after(3000, status_window.destroy)
+    
+    # def show_modern_dialog(self, title, message, dialog_type):
+    #     """Show modern dialog with enhanced styling"""
+    #     dialog_window = tk.Toplevel(self.root)
+    #     dialog_window.title(title)
+    #     dialog_window.geometry("500x300")
+    #     dialog_window.configure(bg=ModernStyle.COLORS['bg_primary'])
+    #     dialog_window.resizable(True, True)
+        
+    #     # Center the window
+    #     dialog_window.transient(self.root)
+    #     dialog_window.grab_set()
+        
+    #     # Header
+    #     header_frame = tk.Frame(dialog_window, bg=ModernStyle.COLORS['bg_secondary'])
+    #     header_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+    #     header_label = tk.Label(header_frame, text=title,
+    #                            font=('Segoe UI', 16, 'bold'),
+    #                            fg=ModernStyle.COLORS['text_primary'],
+    #                            bg=ModernStyle.COLORS['bg_secondary'],
+    #                            pady=15)
+    #     header_label.pack()
+        
+    #     # Message content
+    #     message_text = scrolledtext.ScrolledText(
+    #         dialog_window,
+    #         font=('Segoe UI', 11),
+    #         bg=ModernStyle.COLORS['card_bg'],
+    #         fg=ModernStyle.COLORS['text_primary'],
+    #         relief='flat',
+    #         bd=0,
+    #         padx=20,
+    #         pady=20,
+    #         wrap=tk.WORD,
+    #         selectbackground=ModernStyle.COLORS['accent_primary']
+    #     )
+    #     message_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+    #     message_text.insert(tk.END, message)
+    #     message_text.config(state='disabled')
+        
+    #     # Close button
+    #     button_frame = tk.Frame(dialog_window, bg=ModernStyle.COLORS['bg_primary'])
+    #     button_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
+    #     close_btn = tk.Button(button_frame, text="Close",
+    #                          font=('Segoe UI', 10, 'bold'),
+    #                          bg=ModernStyle.COLORS['accent_primary'],
+    #                          fg='white',
+    #                          relief='flat',
+    #                          bd=0,
+    #                          padx=20,
+    #                          pady=8,
+    #                          cursor='hand2',
     #   
 
 
