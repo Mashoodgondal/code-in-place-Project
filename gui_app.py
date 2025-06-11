@@ -892,3 +892,23 @@ def main():
 if __name__ == "__main__":
     main()
    
+
+
+
+    # Message content
+        # message_text = scrolledtext.ScrolledText(
+        #     dialog_window,
+        #     font=('Segoe UI', 11),
+        #     bg=ModernStyle.COLORS['card_bg'],
+        #     fg=ModernStyle.COLORS['text_primary'],
+        #     relief='flat',
+        #     bd=0,
+        #     padx=20,
+        #     pady=20,
+        #     wrap=tk.WORD,
+        #     selectbackground=ModernStyle.COLORS['accent_primary']
+        # )
+        # message_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        # message_text.insert(tk.END, message)
+        # message_text.config(state='disabled')
+        
