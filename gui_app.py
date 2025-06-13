@@ -1,928 +1,1018 @@
-# Algorithm Challenge App - Professional Design
-# A comprehensive application for solving algorithm-based puzzles with modern UI
-
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import random
 import string
 import math
-from typing import List, Tuple, Optional
-from abc import ABC, abstractmethod
 
-class Challenge(ABC):
-    """Abstract base class for all challenges"""
-    
-    def __init__(self, name: str, description: str, color: str, icon: str):
-        self.name = name
-        self.description = description
-        self.color = color
-        self.icon = icon
-        self.completed = False
-    
-    @abstractmethod
-    def generate_problem(self):
-        """Generate a new problem instance"""
-        pass
-    
-    @abstractmethod
-    def check_solution(self, solution):
-        """Check if the provided solution is correct"""
-        pass
-    
-    @abstractmethod
-    def get_hint(self):
-        """Provide a hint for solving the problem"""
-        pass
-    
-    @abstractmethod
-    def get_solution(self):
-        """Get the complete solution with explanation"""
-        pass
-
-class SudokuChallenge(Challenge):
-    """Sudoku puzzle challenge"""
-    
-    def __init__(self):
-        super().__init__("Sudoku Solver", "Solve a 9x9 Sudoku puzzle using logical deduction", 
-                         "#FF6B6B", "🧩")
-        self.board = None
-        self.solution = None
-    
-    def generate_problem(self):
-        """Generate a new Sudoku puzzle"""
-        # Create a complete solved board
-        self.solution = [[0 for _ in range(9)] for _ in range(9)]
-        self._fill_board(self.solution)
+class AlgorithmChallengeApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Algorithm Challenge Hub")
+        self.root.geometry("1200x800")
+        self.root.configure(bg="#0f172a")
         
-        # Create puzzle by removing numbers
-        self.board = [row[:] for row in self.solution]
-        cells_to_remove = random.randint(40, 55)
+        self.colors = {
+            'primary': '#3b82f6',
+            'secondary': '#8b5cf6',
+            'accent': '#06d6a0',
+            'warning': '#f59e0b',
+            'danger': '#ef4444',
+            'dark': '#0f172a',
+            'darker': '#020617',
+            'light': '#f1f5f9',
+            'gray': '#64748b',
+            'card': '#1e293b'
+        }
         
-        for _ in range(cells_to_remove):
-            row, col = random.randint(0, 8), random.randint(0, 8)
-            self.board[row][col] = 0
+        self.setup_styles()
+        self.create_main_interface()
         
-        return self._format_board(self.board)
+    def setup_styles(self):
+        style = ttk.Style()
+        style.theme_use('clam')
+        
+        style.configure('Custom.TButton',
+                       background=self.colors['primary'],
+                       foreground='white',
+                       borderwidth=0,
+                       focuscolor='none',
+                       font=('Arial', 11, 'bold'))
+        
+        style.map('Custom.TButton',
+                 background=[('active', '#2563eb')])
+        
+        style.configure('Secondary.TButton',
+                       background=self.colors['secondary'],
+                       foreground='white',
+                       borderwidth=0,
+                       focuscolor='none',
+                       font=('Arial', 10))
+        
+        style.map('Secondary.TButton',
+                 background=[('active', '#7c3aed')])
+        
+        style.configure('Success.TButton',
+                       background=self.colors['accent'],
+                       foreground='white',
+                       borderwidth=0,
+                       focuscolor='none',
+                       font=('Arial', 10))
+        
+        style.map('Success.TButton',
+                 background=[('active', '#059669')])
     
-    def _fill_board(self, board):
-        """Fill the board using backtracking"""
+    def create_main_interface(self):
+        main_container = tk.Frame(self.root, bg=self.colors['dark'])
+        main_container.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        header_frame = tk.Frame(main_container, bg=self.colors['dark'], height=80)
+        header_frame.pack(fill='x', pady=(0, 20))
+        header_frame.pack_propagate(False)
+        
+        title_label = tk.Label(header_frame, 
+                              text="Algorithm Challenge Hub",
+                              font=('Arial', 28, 'bold'),
+                              fg=self.colors['light'],
+                              bg=self.colors['dark'])
+        title_label.pack(side='left', pady=20)
+        
+        subtitle_label = tk.Label(header_frame,
+                                 text="Master algorithms through interactive puzzles",
+                                 font=('Arial', 14),
+                                 fg=self.colors['gray'],
+                                 bg=self.colors['dark'])
+        subtitle_label.pack(side='left', padx=(20, 0), pady=20)
+        
+        content_frame = tk.Frame(main_container, bg=self.colors['dark'])
+        content_frame.pack(fill='both', expand=True)
+        
+        canvas = tk.Canvas(content_frame, bg=self.colors['dark'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = tk.Frame(canvas, bg=self.colors['dark'])
+        
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+        
+        self.create_challenge_cards()
+    
+    def create_challenge_cards(self):
+        challenges = [
+            {
+                'title': 'Sudoku Solver',
+                'description': 'Solve 9x9 Sudoku puzzles using backtracking algorithm',
+                'color': self.colors['primary'],
+                'action': self.open_sudoku
+            },
+            {
+                'title': 'Number Sequence Predictor',
+                'description': 'Identify patterns in mathematical sequences',
+                'color': self.colors['secondary'],
+                'action': self.open_sequence_predictor
+            },
+            {
+                'title': 'Caesar Cipher Decoder',
+                'description': 'Decode encrypted messages using classical cryptography',
+                'color': self.colors['accent'],
+                'action': self.open_caesar_cipher
+            },
+            {
+                'title': 'Sorting Algorithm Visualizer',
+                'description': 'Learn sorting algorithms through visual demonstrations',
+                'color': self.colors['warning'],
+                'action': self.open_sorting_visualizer
+            },
+            {
+                'title': 'Prime Number Generator',
+                'description': 'Generate prime numbers using the Sieve of Eratosthenes',
+                'color': self.colors['danger'],
+                'action': self.open_prime_generator
+            }
+        ]
+        
+        for i, challenge in enumerate(challenges):
+            row = i // 2
+            col = i % 2
+            
+            card_frame = tk.Frame(self.scrollable_frame, 
+                                 bg=self.colors['card'],
+                                 relief='flat',
+                                 bd=2)
+            card_frame.grid(row=row, column=col, padx=15, pady=15, sticky='ew')
+            
+            self.scrollable_frame.grid_columnconfigure(col, weight=1)
+            
+            title_frame = tk.Frame(card_frame, bg=challenge['color'], height=60)
+            title_frame.pack(fill='x')
+            title_frame.pack_propagate(False)
+            
+            title_label = tk.Label(title_frame,
+                                  text=challenge['title'],
+                                  font=('Arial', 16, 'bold'),
+                                  fg='white',
+                                  bg=challenge['color'])
+            title_label.pack(pady=15)
+            
+            content_frame = tk.Frame(card_frame, bg=self.colors['card'])
+            content_frame.pack(fill='both', expand=True, padx=20, pady=20)
+            
+            desc_label = tk.Label(content_frame,
+                                 text=challenge['description'],
+                                 font=('Arial', 12),
+                                 fg=self.colors['light'],
+                                 bg=self.colors['card'],
+                                 wraplength=300,
+                                 justify='left')
+            desc_label.pack(pady=(0, 15))
+            
+            launch_btn = ttk.Button(content_frame,
+                                   text="Launch Challenge",
+                                   style='Custom.TButton',
+                                   command=challenge['action'])
+            launch_btn.pack()
+    
+    def open_sudoku(self):
+        sudoku_window = tk.Toplevel(self.root)
+        sudoku_window.title("Sudoku Solver Challenge")
+        sudoku_window.geometry("600x700")
+        sudoku_window.configure(bg=self.colors['dark'])
+        
+        header = tk.Label(sudoku_window,
+                         text="Sudoku Solver",
+                         font=('Arial', 20, 'bold'),
+                         fg=self.colors['light'],
+                         bg=self.colors['dark'])
+        header.pack(pady=20)
+        
+        grid_frame = tk.Frame(sudoku_window, bg=self.colors['dark'])
+        grid_frame.pack(pady=20)
+        
+        self.sudoku_entries = []
+        for i in range(9):
+            row = []
+            for j in range(9):
+                entry = tk.Entry(grid_frame, width=3, justify='center',
+                               font=('Arial', 14, 'bold'),
+                               bg=self.colors['light'],
+                               fg=self.colors['dark'])
+                entry.grid(row=i, column=j, padx=1, pady=1)
+                row.append(entry)
+            self.sudoku_entries.append(row)
+        
+        button_frame = tk.Frame(sudoku_window, bg=self.colors['dark'])
+        button_frame.pack(pady=20)
+        
+        generate_btn = ttk.Button(button_frame,
+                                 text="Generate Puzzle",
+                                 style='Secondary.TButton',
+                                 command=self.generate_sudoku_puzzle)
+        generate_btn.pack(side='left', padx=10)
+        
+        solve_btn = ttk.Button(button_frame,
+                              text="Solve Puzzle",
+                              style='Success.TButton',
+                              command=self.solve_sudoku_puzzle)
+        solve_btn.pack(side='left', padx=10)
+        
+        clear_btn = ttk.Button(button_frame,
+                              text="Clear Grid",
+                              style='Custom.TButton',
+                              command=self.clear_sudoku_grid)
+        clear_btn.pack(side='left', padx=10)
+        
+        info_text = tk.Text(sudoku_window, height=8, width=70,
+                           bg=self.colors['card'],
+                           fg=self.colors['light'],
+                           font=('Arial', 10))
+        info_text.pack(pady=20, padx=20)
+        info_text.insert('1.0', 
+            "How to use Sudoku Solver:\n\n"
+            "1. Click 'Generate Puzzle' to create a random Sudoku puzzle\n"
+            "2. Fill in numbers 1-9 in empty cells\n"
+            "3. Each row, column, and 3x3 box must contain all digits 1-9\n"
+            "4. Click 'Solve Puzzle' to see the solution using backtracking algorithm\n"
+            "5. Use 'Clear Grid' to start fresh\n\n"
+            "The backtracking algorithm tries each number and backtracks when it hits a dead end.")
+        info_text.config(state='disabled')
+    
+    def generate_sudoku_puzzle(self):
+        puzzle = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        ]
+        
         for i in range(9):
             for j in range(9):
-                if board[i][j] == 0:
-                    numbers = list(range(1, 10))
-                    random.shuffle(numbers)
-                    for num in numbers:
-                        if self._is_valid(board, i, j, num):
-                            board[i][j] = num
-                            if self._fill_board(board):
-                                return True
-                            board[i][j] = 0
-                    return False
-        return True
+                self.sudoku_entries[i][j].delete(0, 'end')
+                if puzzle[i][j] != 0:
+                    self.sudoku_entries[i][j].insert(0, str(puzzle[i][j]))
     
-    def _is_valid(self, board, row, col, num):
-        """Check if placing num at (row, col) is valid"""
-        # Check row
-        for j in range(9):
-            if board[row][j] == num:
-                return False
-        
-        # Check column
+    def solve_sudoku_puzzle(self):
+        grid = []
         for i in range(9):
-            if board[i][col] == num:
+            row = []
+            for j in range(9):
+                val = self.sudoku_entries[i][j].get()
+                if val == '':
+                    row.append(0)
+                else:
+                    try:
+                        row.append(int(val))
+                    except ValueError:
+                        row.append(0)
+            grid.append(row)
+        
+        if self.solve_sudoku(grid):
+            for i in range(9):
+                for j in range(9):
+                    self.sudoku_entries[i][j].delete(0, 'end')
+                    self.sudoku_entries[i][j].insert(0, str(grid[i][j]))
+        else:
+            messagebox.showerror("Error", "No solution exists for this puzzle!")
+    
+    def solve_sudoku(self, grid):
+        for i in range(9):
+            for j in range(9):
+                if grid[i][j] == 0:
+                    for num in range(1, 10):
+                        if self.is_valid_sudoku(grid, i, j, num):
+                            grid[i][j] = num
+                            if self.solve_sudoku(grid):
+                                return True
+                            grid[i][j] = 0
+                    return False
+        return True
+    
+    def is_valid_sudoku(self, grid, row, col, num):
+        for j in range(9):
+            if grid[row][j] == num:
                 return False
         
-        # Check 3x3 box
-        start_row, start_col = 3 * (row // 3), 3 * (col // 3)
-        for i in range(start_row, start_row + 3):
-            for j in range(start_col, start_col + 3):
-                if board[i][j] == num:
+        for i in range(9):
+            if grid[i][col] == num:
+                return False
+        
+        start_row = row - row % 3
+        start_col = col - col % 3
+        for i in range(3):
+            for j in range(3):
+                if grid[i + start_row][j + start_col] == num:
                     return False
         
         return True
     
-    def _format_board(self, board):
-        """Format board for display"""
-        result = "🧩 Sudoku Puzzle (Enter digits 1-9, use 0 for empty cells):\n\n"
-        for i, row in enumerate(board):
-            if i % 3 == 0 and i != 0:
-                result += "  ──────┼───────┼──────\n"
-            for j, cell in enumerate(row):
-                if j % 3 == 0 and j != 0:
-                    result += " │ "
-                elif j == 0:
-                    result += "  "
-                result += f"{cell if cell != 0 else '·'} "
-            result += "\n"
+    def clear_sudoku_grid(self):
+        for i in range(9):
+            for j in range(9):
+                self.sudoku_entries[i][j].delete(0, 'end')
+    
+    def open_sequence_predictor(self):
+        seq_window = tk.Toplevel(self.root)
+        seq_window.title("Number Sequence Predictor")
+        seq_window.geometry("700x600")
+        seq_window.configure(bg=self.colors['dark'])
+        
+        header = tk.Label(seq_window,
+                         text="Number Sequence Predictor",
+                         font=('Arial', 20, 'bold'),
+                         fg=self.colors['light'],
+                         bg=self.colors['dark'])
+        header.pack(pady=20)
+        
+        input_frame = tk.Frame(seq_window, bg=self.colors['dark'])
+        input_frame.pack(pady=20)
+        
+        tk.Label(input_frame,
+                text="Enter sequence (comma-separated):",
+                font=('Arial', 12),
+                fg=self.colors['light'],
+                bg=self.colors['dark']).pack()
+        
+        self.sequence_entry = tk.Entry(input_frame, width=50,
+                                      font=('Arial', 12),
+                                      bg=self.colors['light'])
+        self.sequence_entry.pack(pady=10)
+        
+        button_frame = tk.Frame(seq_window, bg=self.colors['dark'])
+        button_frame.pack(pady=10)
+        
+        analyze_btn = ttk.Button(button_frame,
+                               text="Analyze Sequence",
+                               style='Custom.TButton',
+                               command=self.analyze_sequence)
+        analyze_btn.pack(side='left', padx=10)
+        
+        generate_btn = ttk.Button(button_frame,
+                                text="Generate Example",
+                                style='Secondary.TButton',
+                                command=self.generate_example_sequence)
+        generate_btn.pack(side='left', padx=10)
+        
+        self.sequence_result = scrolledtext.ScrolledText(seq_window,
+                                                        height=15, width=80,
+                                                        bg=self.colors['card'],
+                                                        fg=self.colors['light'],
+                                                        font=('Arial', 10))
+        self.sequence_result.pack(pady=20, padx=20, fill='both', expand=True)
+        
+        self.sequence_result.insert('1.0',
+            "Number Sequence Analysis:\n\n"
+            "This tool analyzes mathematical sequences and predicts the next numbers.\n"
+            "Try these examples:\n"
+            "• Arithmetic: 2, 4, 6, 8, 10\n"
+            "• Geometric: 1, 2, 4, 8, 16\n"
+            "• Fibonacci: 1, 1, 2, 3, 5, 8\n"
+            "• Squares: 1, 4, 9, 16, 25\n"
+            "• Prime: 2, 3, 5, 7, 11\n\n"
+            "Click 'Generate Example' for random sequences to practice with!")
+    
+    def analyze_sequence(self):
+        try:
+            sequence_str = self.sequence_entry.get()
+            sequence = [int(x.strip()) for x in sequence_str.split(',')]
+            
+            if len(sequence) < 3:
+                messagebox.showerror("Error", "Please enter at least 3 numbers!")
+                return
+            
+            analysis = self.detect_sequence_pattern(sequence)
+            
+            self.sequence_result.delete('1.0', 'end')
+            self.sequence_result.insert('1.0', analysis)
+            
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numbers separated by commas!")
+    
+    def detect_sequence_pattern(self, seq):
+        result = f"Sequence Analysis for: {', '.join(map(str, seq))}\n\n"
+        
+        differences = [seq[i+1] - seq[i] for i in range(len(seq)-1)]
+        result += f"First differences: {', '.join(map(str, differences))}\n"
+        
+        if all(d == differences[0] for d in differences):
+            result += f"Pattern: Arithmetic sequence with common difference {differences[0]}\n"
+            next_val = seq[-1] + differences[0]
+            result += f"Next number: {next_val}\n"
+            result += f"Formula: a(n) = {seq[0]} + {differences[0]}*(n-1)\n\n"
+        
+        ratios = []
+        geometric = True
+        for i in range(1, len(seq)):
+            if seq[i-1] != 0:
+                ratios.append(seq[i] / seq[i-1])
+            else:
+                geometric = False
+                break
+        
+        if geometric and len(ratios) > 0 and all(abs(r - ratios[0]) < 0.001 for r in ratios):
+            result += f"Pattern: Geometric sequence with ratio {ratios[0]:.2f}\n"
+            next_val = int(seq[-1] * ratios[0])
+            result += f"Next number: {next_val}\n\n"
+        
+        if len(seq) >= 3:
+            is_fibonacci = True
+            for i in range(2, len(seq)):
+                if seq[i] != seq[i-1] + seq[i-2]:
+                    is_fibonacci = False
+                    break
+            
+            if is_fibonacci:
+                result += "Pattern: Fibonacci sequence\n"
+                next_val = seq[-1] + seq[-2]
+                result += f"Next number: {next_val}\n\n"
+        
+        squares = [i*i for i in range(1, len(seq)+1)]
+        if seq == squares:
+            result += "Pattern: Perfect squares\n"
+            next_val = (len(seq)+1)**2
+            result += f"Next number: {next_val}\n\n"
+        
+        if len(differences) > 1:
+            second_differences = [differences[i+1] - differences[i] for i in range(len(differences)-1)]
+            result += f"Second differences: {', '.join(map(str, second_differences))}\n"
+            
+            if all(d == second_differences[0] for d in second_differences):
+                result += "Pattern: Quadratic sequence (constant second differences)\n"
+        
+        result += "\nAlgorithm used: Pattern recognition through difference analysis"
         return result
     
-    def check_solution(self, solution):
-        """Check if the provided solution is correct"""
-        try:
-            lines = solution.strip().split('\n')
-            user_board = []
-            for line in lines:
-                if any(c.isdigit() for c in line):
-                    row = [int(c) for c in line if c.isdigit()]
-                    if len(row) == 9:
-                        user_board.append(row)
-            
-            if len(user_board) != 9:
-                return False
-            
-            return user_board == self.solution
-        except:
-            return False
-    
-    def get_hint(self):
-        """Provide a hint for Sudoku solving"""
-        hints = [
-            "🔍 Look for cells where only one number can fit",
-            "📍 Check if a number can only go in one place in a row/column/box",
-            "❌ Use the process of elimination to narrow down possibilities", 
-            "🎯 Focus on rows, columns, or boxes with the most filled cells"
-        ]
-        return random.choice(hints)
-    
-    def get_solution(self):
-        """Get the complete solution"""
-        return f"✅ Complete Solution:\n\n{self._format_board(self.solution)}\n\n💡 Strategy: Use logical deduction by finding cells with only one possible number, then numbers that can only go in one place within a row, column, or 3x3 box."
-
-class NumberSequenceChallenge(Challenge):
-    """Number sequence pattern recognition challenge"""
-    
-    def __init__(self):
-        super().__init__("Number Sequences", "Find the pattern in number sequences", 
-                         "#4ECDC4", "🔢")
-        self.sequence = None
-        self.pattern_type = None
-        self.next_numbers = None
-    
-    def generate_problem(self):
-        """Generate a new number sequence problem"""
+    def generate_example_sequence(self):
         patterns = [
-            self._arithmetic_sequence,
-            self._geometric_sequence,
-            self._fibonacci_like,
-            self._square_sequence,
-            self._prime_sequence
+            ([2, 5, 8, 11, 14], "Arithmetic sequence"),
+            ([3, 6, 12, 24, 48], "Geometric sequence"),
+            ([1, 1, 2, 3, 5, 8], "Fibonacci sequence"),
+            ([1, 4, 9, 16, 25], "Perfect squares"),
+            ([2, 3, 5, 7, 11], "Prime numbers")
         ]
         
-        pattern_func = random.choice(patterns)
-        self.sequence, self.pattern_type, self.next_numbers = pattern_func()
+        sequence, description = random.choice(patterns)
+        self.sequence_entry.delete(0, 'end')
+        self.sequence_entry.insert(0, ', '.join(map(str, sequence)))
         
-        display_sequence = self.sequence[:-2]  # Hide last 2 numbers
-        return f"🔢 Find the next 2 numbers in this sequence:\n\n📊 Sequence: {', '.join(map(str, display_sequence))}, ?, ?\n\n🏷️  Pattern type: {self.pattern_type}\n\n💭 Enter the two missing numbers separated by comma or space"
+        self.sequence_result.delete('1.0', 'end')
+        self.sequence_result.insert('1.0', f"Example sequence generated: {description}\n\n"
+                                   f"Sequence: {', '.join(map(str, sequence))}\n\n"
+                                   "Click 'Analyze Sequence' to see the pattern analysis!")
     
-    def _arithmetic_sequence(self):
-        """Generate arithmetic sequence"""
-        start = random.randint(1, 20)
-        diff = random.randint(2, 10)
-        sequence = [start + i * diff for i in range(8)]
-        return sequence, "Arithmetic (constant difference)", sequence[-2:]
+    def open_caesar_cipher(self):
+        cipher_window = tk.Toplevel(self.root)
+        cipher_window.title("Caesar Cipher Decoder")
+        cipher_window.geometry("800x650")
+        cipher_window.configure(bg=self.colors['dark'])
+        
+        header = tk.Label(cipher_window,
+                         text="Caesar Cipher Decoder",
+                         font=('Arial', 20, 'bold'),
+                         fg=self.colors['light'],
+                         bg=self.colors['dark'])
+        header.pack(pady=20)
+        
+        input_frame = tk.Frame(cipher_window, bg=self.colors['dark'])
+        input_frame.pack(pady=10, padx=20, fill='x')
+        
+        tk.Label(input_frame,
+                text="Enter text to encrypt/decrypt:",
+                font=('Arial', 12),
+                fg=self.colors['light'],
+                bg=self.colors['dark']).pack(anchor='w')
+        
+        self.cipher_input = tk.Text(input_frame, height=4, width=80,
+                                   bg=self.colors['light'],
+                                   fg=self.colors['dark'],
+                                   font=('Arial', 11))
+        self.cipher_input.pack(pady=5, fill='x')
+        
+        shift_frame = tk.Frame(cipher_window, bg=self.colors['dark'])
+        shift_frame.pack(pady=10)
+        
+        tk.Label(shift_frame,
+                text="Shift value:",
+                font=('Arial', 12),
+                fg=self.colors['light'],
+                bg=self.colors['dark']).pack(side='left')
+        
+        self.shift_var = tk.StringVar(value="3")
+        shift_spinbox = tk.Spinbox(shift_frame, from_=1, to=25,
+                                  textvariable=self.shift_var,
+                                  width=5, font=('Arial', 11))
+        shift_spinbox.pack(side='left', padx=10)
+        
+        button_frame = tk.Frame(cipher_window, bg=self.colors['dark'])
+        button_frame.pack(pady=15)
+        
+        encrypt_btn = ttk.Button(button_frame,
+                               text="Encrypt",
+                               style='Custom.TButton',
+                               command=lambda: self.caesar_cipher_operation(True))
+        encrypt_btn.pack(side='left', padx=10)
+        
+        decrypt_btn = ttk.Button(button_frame,
+                               text="Decrypt",
+                               style='Secondary.TButton',
+                               command=lambda: self.caesar_cipher_operation(False))
+        decrypt_btn.pack(side='left', padx=10)
+        
+        brute_force_btn = ttk.Button(button_frame,
+                                   text="Brute Force Decode",
+                                   style='Success.TButton',
+                                   command=self.brute_force_decode)
+        brute_force_btn.pack(side='left', padx=10)
+        
+        result_frame = tk.Frame(cipher_window, bg=self.colors['dark'])
+        result_frame.pack(pady=10, padx=20, fill='both', expand=True)
+        
+        tk.Label(result_frame,
+                text="Result:",
+                font=('Arial', 12, 'bold'),
+                fg=self.colors['light'],
+                bg=self.colors['dark']).pack(anchor='w')
+        
+        self.cipher_result = scrolledtext.ScrolledText(result_frame,
+                                                      height=12, width=80,
+                                                      bg=self.colors['card'],
+                                                      fg=self.colors['light'],
+                                                      font=('Arial', 11))
+        self.cipher_result.pack(fill='both', expand=True)
+        
+        self.cipher_result.insert('1.0',
+            "Caesar Cipher Information:\n\n"
+            "The Caesar cipher shifts each letter by a fixed number of positions.\n"
+            "For example, with shift 3: A→D, B→E, C→F, etc.\n\n"
+            "Usage:\n"
+            "1. Enter your text above\n"
+            "2. Set the shift value (1-25)\n"
+            "3. Click Encrypt or Decrypt\n"
+            "4. Use Brute Force Decode to try all possible shifts\n\n"
+            "Try encrypting: 'HELLO WORLD' with shift 3")
     
-    def _geometric_sequence(self):
-        """Generate geometric sequence"""
-        start = random.randint(2, 5)
-        ratio = random.randint(2, 3)
-        sequence = [start * (ratio ** i) for i in range(6)]
-        return sequence, "Geometric (constant ratio)", sequence[-2:]
-    
-    def _fibonacci_like(self):
-        """Generate Fibonacci-like sequence"""
-        a, b = random.randint(1, 5), random.randint(1, 5)
-        sequence = [a, b]
-        for _ in range(6):
-            sequence.append(sequence[-1] + sequence[-2])
-        return sequence, "Fibonacci-like (sum of previous two)", sequence[-2:]
-    
-    def _square_sequence(self):
-        """Generate square number sequence"""
-        start = random.randint(1, 3)
-        sequence = [(start + i) ** 2 for i in range(7)]
-        return sequence, "Perfect squares", sequence[-2:]
-    
-    def _prime_sequence(self):
-        """Generate prime number sequence"""
-        primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
-        start_idx = random.randint(0, 3)
-        sequence = primes[start_idx:start_idx + 7]
-        return sequence, "Prime numbers", sequence[-2:]
-    
-    def check_solution(self, solution):
-        """Check if the provided solution is correct"""
+    def caesar_cipher_operation(self, encrypt=True):
         try:
-            numbers = [int(x.strip()) for x in solution.replace(',', ' ').split()]
-            return len(numbers) == 2 and numbers == self.next_numbers
-        except:
-            return False
+            text = self.cipher_input.get('1.0', 'end-1c').strip().upper()
+            shift = int(self.shift_var.get())
+            
+            if not encrypt:
+                shift = -shift
+            
+            result = self.caesar_cipher(text, shift)
+            
+            operation = "Encryption" if encrypt else "Decryption"
+            self.cipher_result.delete('1.0', 'end')
+            self.cipher_result.insert('1.0',
+                f"{operation} Result (Shift: {abs(int(self.shift_var.get()))}):\n\n"
+                f"Original: {text}\n"
+                f"Result: {result}\n\n"
+                f"Algorithm: Each letter is shifted {abs(shift)} positions in the alphabet.")
+            
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid shift value!")
     
-    def get_hint(self):
-        """Provide a hint for sequence solving"""
-        hints = {
-            "Arithmetic": "➕ Look at the differences between consecutive numbers",
-            "Geometric": "✖️ Look at the ratios between consecutive numbers", 
-            "Fibonacci-like": "🔄 Each number might be the sum of the previous two",
-            "Perfect squares": "²️⃣ These might be perfect squares of consecutive integers",
-            "Prime numbers": "🔢 These might be prime numbers in order"
-        }
-        for key in hints:
-            if key in self.pattern_type:
-                return hints[key]
-        return "🧮 Look for mathematical relationships between the numbers"
-    
-    def get_solution(self):
-        """Get the complete solution"""
-        return f"✅ Complete sequence: {', '.join(map(str, self.sequence))}\n\n🎯 Pattern: {self.pattern_type}\n📊 Next two numbers: {', '.join(map(str, self.next_numbers))}"
-
-class CryptographyChallenge(Challenge):
-    """Simple cryptography puzzle challenge"""
-    
-    def __init__(self):
-        super().__init__("Caesar Cipher", "Decode messages using Caesar cipher", 
-                         "#45B7D1", "🔐")
-        self.original_message = None
-        self.encoded_message = None
-        self.shift = None
-    
-    def generate_problem(self):
-        """Generate a new cryptography problem"""
-        messages = [
-            "HELLO WORLD",
-            "PYTHON IS GREAT", 
-            "ALGORITHMS ARE FUN",
-            "KEEP LEARNING",
-            "SOLVE THE PUZZLE",
-            "CRYPTOGRAPHY ROCKS",
-            "SUCCESS AWAITS",
-            "NEVER GIVE UP"
-        ]
-        
-        self.original_message = random.choice(messages)
-        self.shift = random.randint(1, 25)
-        self.encoded_message = self._caesar_encode(self.original_message, self.shift)
-        
-        return f"🔐 Decode this Caesar cipher:\n\n📝 Encoded message: {self.encoded_message}\n\n💡 Hint: Each letter is shifted by the same amount (1-25 positions)\n\n🎯 Enter the decoded message (original text):"
-    
-    def _caesar_encode(self, message, shift):
-        """Encode message using Caesar cipher"""
+    def caesar_cipher(self, text, shift):
         result = ""
-        for char in message:
+        for char in text:
             if char.isalpha():
-                ascii_offset = ord('A') if char.isupper() else ord('a')
-                result += chr((ord(char) - ascii_offset + shift) % 26 + ascii_offset)
+                ascii_offset = ord('A')
+                shifted = (ord(char) - ascii_offset + shift) % 26
+                result += chr(shifted + ascii_offset)
             else:
                 result += char
         return result
     
-    def _caesar_decode(self, message, shift):
-        """Decode message using Caesar cipher"""
-        return self._caesar_encode(message, -shift)
+    def brute_force_decode(self):
+        text = self.cipher_input.get('1.0', 'end-1c').strip().upper()
+        
+        if not text:
+            messagebox.showerror("Error", "Please enter text to decode!")
+            return
+        
+        self.cipher_result.delete('1.0', 'end')
+        self.cipher_result.insert('1.0', "Brute Force Decoding - All Possible Shifts:\n\n")
+        
+        for shift in range(1, 26):
+            decoded = self.caesar_cipher(text, -shift)
+            self.cipher_result.insert('end', f"Shift {shift:2d}: {decoded}\n")
+        
+        self.cipher_result.insert('end', 
+            "\nLook for the shift that produces readable English text!")
     
-    def check_solution(self, solution):
-        """Check if the provided solution is correct"""
-        return solution.upper().strip() == self.original_message
+    def open_sorting_visualizer(self):
+        sort_window = tk.Toplevel(self.root)
+        sort_window.title("Sorting Algorithm Visualizer")
+        sort_window.geometry("900x700")
+        sort_window.configure(bg=self.colors['dark'])
+        
+        header = tk.Label(sort_window,
+                         text="Sorting Algorithm Visualizer",
+                         font=('Arial', 20, 'bold'),
+                         fg=self.colors['light'],
+                         bg=self.colors['dark'])
+        header.pack(pady=20)
+        
+        control_frame = tk.Frame(sort_window, bg=self.colors['dark'])
+        control_frame.pack(pady=10)
+        
+        self.sort_algorithm = tk.StringVar(value="Bubble Sort")
+        algorithm_menu = ttk.Combobox(control_frame,
+                                    textvariable=self.sort_algorithm,
+                                    values=["Bubble Sort", "Selection Sort", "Insertion Sort"],
+                                    state="readonly")
+        algorithm_menu.pack(side='left', padx=10)
+        
+        generate_btn = ttk.Button(control_frame,
+                                text="Generate Array",
+                                style='Secondary.TButton',
+                                command=self.generate_sort_array)
+        generate_btn.pack(side='left', padx=10)
+        
+        sort_btn = ttk.Button(control_frame,
+                            text="Sort Array",
+                            style='Custom.TButton',
+                            command=self.sort_array)
+        sort_btn.pack(side='left', padx=10)
+        
+        self.sort_canvas = tk.Canvas(sort_window, width=800, height=300,
+                                   bg=self.colors['card'],
+                                   highlightthickness=0)
+        self.sort_canvas.pack(pady=20)
+        
+        self.sort_info.delete('1.0', 'end')
+        self.sort_info.insert('1.0',
+            f"Algorithm: {self.sort_algorithm.get()}\n\n"
+            f"{algorithm_info.get(self.sort_algorithm.get(), '')}\n\n"
+            f"Generated array: {self.sort_array}\n\n"
+            "Click 'Sort Array' to see the algorithm in action!")
     
-    def get_hint(self):
-        """Provide a hint for cryptography solving"""
-        hints = [
-            "🔤 The most common letter in English is 'E' - look for patterns",
-            "🔄 Try different shift values systematically (1, 2, 3...)",
-            "📚 Remember: A=0, B=1, C=2... Z=25",
-            "🎯 Each letter is consistently shifted by the same amount"
-        ]
-        return random.choice(hints)
-    
-    def get_solution(self):
-        """Get the complete solution"""
-        return f"✅ Original message: {self.original_message}\n🔢 Shift amount: {self.shift}\n\n💡 To decode: shift each letter backwards by {self.shift} positions in the alphabet."
-
-class ModernStyle:
-    """Modern styling configuration"""
-    
-    # Color Palette
-    COLORS = {
-        'bg_primary': '#1a1a2e',      # Dark navy
-        'bg_secondary': '#16213e',     # Darker navy
-        'bg_tertiary': '#0f3460',      # Deep blue
-        'accent_primary': '#e94560',   # Coral red
-        'accent_secondary': '#f39c12', # Orange
-        'text_primary': '#ffffff',     # White
-        'text_secondary': '#a8a8a8',   # Light gray
-        'success': '#27ae60',          # Green
-        'warning': '#f39c12',          # Orange
-        'error': '#e74c3c',            # Red
-        'card_bg': '#252540',          # Card background
-        'button_hover': '#2c2c54'      # Button hover
-    }
-    
-    @staticmethod
-    def configure_styles():
-        """Configure modern ttk styles"""
-        style = ttk.Style()
+    def draw_array(self):
+        self.sort_canvas.delete("all")
+        canvas_width = 800
+        canvas_height = 300
+        bar_width = canvas_width // len(self.sort_array)
         
-        # Configure modern button style
-        style.configure('Modern.TButton',
-                       font=('Segoe UI', 10, 'bold'),
-                       padding=(20, 10),
-                       relief='flat')
-        
-        # Configure challenge button styles
-        style.configure('Challenge.TButton',
-                       font=('Segoe UI', 11, 'bold'),
-                       padding=(15, 8),
-                       relief='flat')
-        
-        # Configure action button styles  
-        style.configure('Action.TButton',
-                       font=('Segoe UI', 9, 'bold'),
-                       padding=(12, 6),
-                       relief='flat')
-        
-        # Configure label styles
-        style.configure('Title.TLabel',
-                       font=('Segoe UI', 24, 'bold'),
-                       foreground=ModernStyle.COLORS['text_primary'])
-        
-        style.configure('Subtitle.TLabel',
-                       font=('Segoe UI', 12),
-                       foreground=ModernStyle.COLORS['text_secondary'])
-        
-        style.configure('Header.TLabel',
-                       font=('Segoe UI', 14, 'bold'),
-                       foreground=ModernStyle.COLORS['text_primary'])
-
-class AlgorithmChallengeApp:
-    """Main application class with modern design"""
-    
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("🧠 Algorithm Challenge App")
-        self.root.geometry("1000x700")
-        self.root.configure(bg=ModernStyle.COLORS['bg_primary'])
-        self.root.resizable(True, True)
-        
-        # Configure modern styles
-        ModernStyle.configure_styles()
-        
-        # Initialize challenges
-        self.challenges = [
-            SudokuChallenge(),
-            NumberSequenceChallenge(),
-            CryptographyChallenge()
-        ]
-        self.current_challenge = None
-        self.current_problem = None
-        
-        self.setup_ui()
-        self.show_welcome()
-    
-    def setup_ui(self):
-        """Set up the modern user interface"""
-        # Create main container with padding
-        main_container = tk.Frame(self.root, bg=ModernStyle.COLORS['bg_primary'])
-        main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Header section
-        self.create_header(main_container)
-        
-        # Challenge selection section
-        self.create_challenge_section(main_container)
-        
-        # Problem display section
-        self.create_problem_section(main_container)
-        
-        # Solution input section
-        self.create_solution_section(main_container)
-        
-        # Action buttons section
-        self.create_action_section(main_container)
-    
-    def create_header(self, parent):
-        """Create the header section"""
-        header_frame = tk.Frame(parent, bg=ModernStyle.COLORS['bg_primary'])
-        header_frame.pack(fill=tk.X, pady=(0, 30))
-        
-        # Main title with gradient effect
-        title_frame = tk.Frame(header_frame, bg=ModernStyle.COLORS['bg_secondary'], 
-                              relief='flat', bd=0)
-        title_frame.pack(fill=tk.X, pady=10)
-        
-        title_label = tk.Label(title_frame, text="🧠 Algorithm Challenge App",
-                              font=('Segoe UI', 26, 'bold'),
-                              fg=ModernStyle.COLORS['text_primary'],
-                              bg=ModernStyle.COLORS['bg_secondary'],
-                              pady=15)
-        title_label.pack()
-        
-        subtitle_label = tk.Label(header_frame, 
-                                 text="Master algorithmic thinking through interactive challenges",
-                                 font=('Segoe UI', 12),
-                                 fg=ModernStyle.COLORS['text_secondary'],
-                                 bg=ModernStyle.COLORS['bg_primary'])
-        subtitle_label.pack(pady=(5, 0))
-    
-    def create_challenge_section(self, parent):
-        """Create the challenge selection section"""
-        section_frame = tk.Frame(parent, bg=ModernStyle.COLORS['bg_primary'])
-        section_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        # Section header
-        header_label = tk.Label(section_frame, text="🎯 Choose Your Challenge",
-                               font=('Segoe UI', 16, 'bold'),
-                               fg=ModernStyle.COLORS['text_primary'],
-                               bg=ModernStyle.COLORS['bg_primary'])
-        header_label.pack(anchor=tk.W, pady=(0, 15))
-        
-        # Challenge cards container
-        cards_frame = tk.Frame(section_frame, bg=ModernStyle.COLORS['bg_primary'])
-        cards_frame.pack(fill=tk.X)
-        
-        # Create challenge cards
-        for i, challenge in enumerate(self.challenges):
-            self.create_challenge_card(cards_frame, challenge, i)
-    
-    def create_challenge_card(self, parent, challenge, index):
-        """Create a modern challenge card"""
-        # Card frame
-        card_frame = tk.Frame(parent, bg=ModernStyle.COLORS['card_bg'],
-                             relief='flat', bd=0, padx=15, pady=15)
-        card_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5)
-        
-        # Challenge icon and name
-        icon_label = tk.Label(card_frame, text=challenge.icon,
-                             font=('Segoe UI', 24),
-                             bg=ModernStyle.COLORS['card_bg'],
-                             fg=challenge.color)
-        icon_label.pack(pady=(5, 10))
-        
-        name_label = tk.Label(card_frame, text=challenge.name,
-                             font=('Segoe UI', 12, 'bold'),
-                             fg=ModernStyle.COLORS['text_primary'],
-                             bg=ModernStyle.COLORS['card_bg'])
-        name_label.pack(pady=(0, 5))
-        
-        desc_label = tk.Label(card_frame, text=challenge.description,
-                             font=('Segoe UI', 9),
-                             fg=ModernStyle.COLORS['text_secondary'],
-                             bg=ModernStyle.COLORS['card_bg'],
-                             wraplength=180, justify=tk.CENTER)
-        desc_label.pack(pady=(0, 15))
-        
-        # Challenge button
-        btn = tk.Button(card_frame, text="Start Challenge",
-                       font=('Segoe UI', 10, 'bold'),
-                       bg=challenge.color,
-                       fg='white',
-                       relief='flat',
-                       bd=0,
-                       pady=8,
-                       cursor='hand2',
-                       command=lambda c=challenge: self.start_challenge(c))
-        btn.pack(fill=tk.X, padx=10)
-        
-        # Hover effects
-        def on_enter(e):
-            btn.configure(bg=self.darken_color(challenge.color))
-        def on_leave(e):
-            btn.configure(bg=challenge.color)
-        
-        btn.bind("<Enter>", on_enter)
-        btn.bind("<Leave>", on_leave)
-    
-    def create_problem_section(self, parent):
-        """Create the problem display section"""
-        section_frame = tk.Frame(parent, bg=ModernStyle.COLORS['bg_primary'])
-        section_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
-        
-        # Section header
-        header_label = tk.Label(section_frame, text="📋 Problem Statement",
-                               font=('Segoe UI', 16, 'bold'),
-                               fg=ModernStyle.COLORS['text_primary'],
-                               bg=ModernStyle.COLORS['bg_primary'])
-        header_label.pack(anchor=tk.W, pady=(0, 10))
-        
-        # Problem display area with modern styling
-        problem_frame = tk.Frame(section_frame, bg=ModernStyle.COLORS['card_bg'],
-                                relief='flat', bd=0)
-        problem_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        self.problem_text = scrolledtext.ScrolledText(
-            problem_frame,
-            font=('Consolas', 11),
-            bg=ModernStyle.COLORS['card_bg'],
-            fg=ModernStyle.COLORS['text_primary'],
-            relief='flat',
-            bd=0,
-            padx=20,
-            pady=20,
-            wrap=tk.WORD,
-            selectbackground=ModernStyle.COLORS['accent_primary'],
-            insertbackground=ModernStyle.COLORS['text_primary']
-        )
-        self.problem_text.pack(fill=tk.BOTH, expand=True)
-    
-    def create_solution_section(self, parent):
-        """Create the solution input section"""
-        section_frame = tk.Frame(parent, bg=ModernStyle.COLORS['bg_primary'])
-        section_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        # Section header
-        header_label = tk.Label(section_frame, text="💡 Your Solution",
-                               font=('Segoe UI', 16, 'bold'),
-                               fg=ModernStyle.COLORS['text_primary'],
-                               bg=ModernStyle.COLORS['bg_primary'])
-        header_label.pack(anchor=tk.W, pady=(0, 10))
-        
-        # Solution input area
-        solution_frame = tk.Frame(section_frame, bg=ModernStyle.COLORS['card_bg'],
-                                 relief='flat', bd=0)
-        solution_frame.pack(fill=tk.X, padx=5, pady=5)
-        
-        self.solution_entry = scrolledtext.ScrolledText(
-            solution_frame,
-            height=4,
-            font=('Consolas', 11),
-            bg=ModernStyle.COLORS['card_bg'],
-            fg=ModernStyle.COLORS['text_primary'],
-            relief='flat',
-            bd=0,
-            padx=20,
-            pady=15,
-            wrap=tk.WORD,
-            selectbackground=ModernStyle.COLORS['accent_primary'],
-            insertbackground=ModernStyle.COLORS['text_primary']
-        )
-        self.solution_entry.pack(fill=tk.X)
-    
-    def create_action_section(self, parent):
-        """Create the action buttons section"""
-        section_frame = tk.Frame(parent, bg=ModernStyle.COLORS['bg_primary'])
-        section_frame.pack(fill=tk.X)
-        
-        # Center the buttons
-        button_container = tk.Frame(section_frame, bg=ModernStyle.COLORS['bg_primary'])
-        button_container.pack(expand=True)
-        
-        # Action buttons with modern styling
-        buttons_data = [
-            ("✅ Check Solution", self.check_solution, ModernStyle.COLORS['success']),
-            ("💡 Get Hint", self.get_hint, ModernStyle.COLORS['warning']),
-            ("📖 Show Solution", self.show_solution, ModernStyle.COLORS['accent_secondary']),
-            ("🔄 New Problem", self.new_problem, ModernStyle.COLORS['accent_primary'])
-        ]
-        
-        self.action_buttons = []
-        for i, (text, command, color) in enumerate(buttons_data):
-            btn = tk.Button(button_container, text=text,
-                           font=('Segoe UI', 10, 'bold'),
-                           bg=color,
-                           fg='white',
-                           relief='flat',
-                           bd=0,
-                           padx=20,
-                           pady=10,
-                           cursor='hand2',
-                           state='disabled',
-                           command=command)
-            btn.pack(side=tk.LEFT, padx=8)
-            self.action_buttons.append(btn)
+        for i, value in enumerate(self.sort_array):
+            x1 = i * bar_width
+            y1 = canvas_height - value
+            x2 = x1 + bar_width - 2
+            y2 = canvas_height
             
-            # Hover effects
-            def on_enter(e, button=btn, hover_color=self.darken_color(color)):
-                if button['state'] != 'disabled':
-                    button.configure(bg=hover_color)
-            def on_leave(e, button=btn, original_color=color):
-                if button['state'] != 'disabled':
-                    button.configure(bg=original_color)
-            
-            btn.bind("<Enter>", on_enter)
-            btn.bind("<Leave>", on_leave)
+            color = self.colors['primary'] if i % 2 == 0 else self.colors['secondary']
+            self.sort_canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline='white')
+            self.sort_canvas.create_text(x1 + bar_width//2, y2 - 10, 
+                                       text=str(value), fill='white', font=('Arial', 8))
     
-    def darken_color(self, color):
-        """Darken a hex color for hover effects"""
-        color = color.lstrip('#')
-        rgb = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
-        darkened = tuple(max(0, int(c * 0.8)) for c in rgb)
-        return f"#{darkened[0]:02x}{darkened[1]:02x}{darkened[2]:02x}"
-    
-    def show_welcome(self):
-        """Display modern welcome message"""
-        welcome_text = """🌟 Welcome to Algorithm Challenge App!
-
-🎯 MISSION
-Master algorithmic thinking through interactive, engaging challenges that build your problem-solving skills step by step.
-
-🚀 AVAILABLE CHALLENGES
-
-🧩 Sudoku Solver
-   • Practice logical deduction with classic 9x9 puzzles
-   • Learn systematic elimination techniques
-   • Build pattern recognition skills
-
-🔢 Number Sequences  
-   • Decode mathematical patterns and relationships
-   • Master arithmetic, geometric, and special sequences
-   • Strengthen analytical thinking
-
-🔐 Caesar Cipher
-   • Explore the foundations of cryptography
-   • Learn systematic decoding techniques  
-   • Understand historical encryption methods
-
-💡 HOW TO GET STARTED
-
-1️⃣ Choose a challenge from the cards above
-2️⃣ Read the problem statement carefully
-3️⃣ Enter your solution in the input area
-4️⃣ Use hints when you need guidance
-5️⃣ Check your answer and learn from explanations
-
-🎖️ FEATURES
-• Interactive problem solving with instant feedback
-• Progressive difficulty levels
-• Detailed hints and complete solutions
-• Professional learning environment
-
-Ready to challenge your mind? Select a challenge above to begin your algorithmic journey! 🚀"""
+    def sort_array(self):
+        algorithm = self.sort_algorithm.get()
+        original_array = self.sort_array.copy()
         
-        self.problem_text.delete(1.0, tk.END)
-        self.problem_text.insert(tk.END, welcome_text)
-    
-    def start_challenge(self, challenge):
-        """Start a new challenge with visual feedback"""
-        self.current_challenge = challenge
-        self.new_problem()
-        
-        # Enable action buttons with visual feedback
-        for btn in self.action_buttons:
-            btn.config(state='normal')
-        
-        # Show success message
-        self.show_status_message(f"🎯 {challenge.name} challenge started!", "success")
-    
-    def new_problem(self):
-        """Generate a new problem with enhanced formatting"""
-        if not self.current_challenge:
-            return
-        
-        self.current_problem = self.current_challenge.generate_problem()
-        self.problem_text.delete(1.0, tk.END)
-        
-        # Enhanced problem display
-        header = f"🎯 CHALLENGE: {self.current_challenge.name}\n"
-        header += f"📝 DESCRIPTION: {self.current_challenge.description}\n"
-        header += "═" * 60 + "\n\n"
-        
-        self.problem_text.insert(tk.END, header)
-        self.problem_text.insert(tk.END, self.current_problem)
-        
-        # Clear solution entry
-        self.solution_entry.delete(1.0, tk.END)
-        self.solution_entry.insert(tk.END, "Enter your solution here...")
-        
-        # Focus on solution entry
-        self.solution_entry.focus_set()
-    
-    def check_solution(self):
-        """Check solution with enhanced feedback"""
-        if not self.current_challenge:
-            return
-        
-        solution = self.solution_entry.get(1.0, tk.END).strip()
-        if not solution or solution == "Enter your solution here...":
-            self.show_status_message("⚠️ Please enter your solution first!", "warning")
-            return
-        
-        if self.current_challenge.check_solution(solution):
-            self.show_status_message("🎉 Excellent! Your solution is correct!", "success")
-            self.current_challenge.completed = True
+        if algorithm == "Bubble Sort":
+            steps = self.bubble_sort_steps()
+        elif algorithm == "Selection Sort":
+            steps = self.selection_sort_steps()
         else:
-            self.show_status_message("❌ Not quite right. Try again or use a hint!", "error")
+            steps = self.insertion_sort_steps()
+        
+        self.sort_info.delete('1.0', 'end')
+        self.sort_info.insert('1.0',
+            f"Sorting with {algorithm}:\n\n"
+            f"Original array: {original_array}\n"
+            f"Sorted array: {self.sort_array}\n\n"
+            f"Steps performed: {len(steps)}\n"
+            f"Comparisons and swaps:\n\n")
+        
+        for i, step in enumerate(steps[:20]):
+            self.sort_info.insert('end', f"Step {i+1}: {step}\n")
+        
+        if len(steps) > 20:
+            self.sort_info.insert('end', f"... and {len(steps) - 20} more steps\n")
+        
+        self.draw_array()
     
-    def get_hint(self):
-        """Show hint with modern dialog"""
-        if not self.current_challenge:
-            return
+    def bubble_sort_steps(self):
+        steps = []
+        n = len(self.sort_array)
         
-        hint = self.current_challenge.get_hint()
-        self.show_modern_dialog("💡 Hint", hint, "info")
+        for i in range(n):
+            for j in range(0, n - i - 1):
+                steps.append(f"Compare {self.sort_array[j]} and {self.sort_array[j+1]}")
+                if self.sort_array[j] > self.sort_array[j + 1]:
+                    self.sort_array[j], self.sort_array[j + 1] = self.sort_array[j + 1], self.sort_array[j]
+                    steps.append(f"Swap {self.sort_array[j+1]} and {self.sort_array[j]}")
+        
+        return steps
     
-    def show_solution(self):
-        """Show complete solution in modern window"""
-        if not self.current_challenge:
-            return
+    def selection_sort_steps(self):
+        steps = []
+        n = len(self.sort_array)
         
-        solution = self.current_challenge.get_solution()
+        for i in range(n):
+            min_idx = i
+            steps.append(f"Finding minimum from position {i}")
+            
+            for j in range(i + 1, n):
+                if self.sort_array[j] < self.sort_array[min_idx]:
+                    min_idx = j
+                    steps.append(f"New minimum found: {self.sort_array[min_idx]} at position {min_idx}")
+            
+            if min_idx != i:
+                self.sort_array[i], self.sort_array[min_idx] = self.sort_array[min_idx], self.sort_array[i]
+                steps.append(f"Swap {self.sort_array[min_idx]} with {self.sort_array[i]}")
         
-        # Create modern solution window
-        solution_window = tk.Toplevel(self.root)
-        solution_window.title(f"📖 Complete Solution - {self.current_challenge.name}")
-        solution_window.geometry("700x500")
-        solution_window.configure(bg=ModernStyle.COLORS['bg_primary'])
-        solution_window.resizable(True, True)
-        
-        # Header
-        header_frame = tk.Frame(solution_window, bg=ModernStyle.COLORS['bg_secondary'])
-        header_frame.pack(fill=tk.X, padx=10, pady=10)
-        
-        header_label = tk.Label(header_frame, 
-                               text=f"📖 Complete Solution: {self.current_challenge.name}",
-                               font=('Segoe UI', 16, 'bold'),
-                               fg=ModernStyle.COLORS['text_primary'],
-                               bg=ModernStyle.COLORS['bg_secondary'],
-                               pady=15)
-        header_label.pack()
-        
-        # Solution text
-        solution_text = scrolledtext.ScrolledText(
-            solution_window,
-            font=('Consolas', 11),
-            bg=ModernStyle.COLORS['card_bg'],
-            fg=ModernStyle.COLORS['text_primary'],
-            relief='flat',
-            bd=0,
-            padx=20,
-            pady=20,
-            wrap=tk.WORD,
-            selectbackground=ModernStyle.COLORS['accent_primary'],
-            insertbackground=ModernStyle.COLORS['text_primary']
-        )
-        solution_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
-        solution_text.insert(tk.END, solution)
-        solution_text.config(state='disabled')
+        return steps
     
-    def show_status_message(self, message, msg_type):
-        """Show status message with appropriate styling"""
-        colors = {
-            'success': ModernStyle.COLORS['success'],
-            'warning': ModernStyle.COLORS['warning'],
-            'error': ModernStyle.COLORS['error'],
-            'info': ModernStyle.COLORS['accent_secondary']
-        }
+    def insertion_sort_steps(self):
+        steps = []
         
-        # Create status popup
-        status_window = tk.Toplevel(self.root)
-        status_window.title("Status")
-        status_window.geometry("400x150")
-        status_window.configure(bg=ModernStyle.COLORS['bg_primary'])
-        status_window.resizable(False, False)
+        for i in range(1, len(self.sort_array)):
+            key = self.sort_array[i]
+            j = i - 1
+            steps.append(f"Insert {key} into sorted portion")
+            
+            while j >= 0 and self.sort_array[j] > key:
+                self.sort_array[j + 1] = self.sort_array[j]
+                steps.append(f"Move {self.sort_array[j]} to position {j+1}")
+                j -= 1
+            
+            self.sort_array[j + 1] = key
+            steps.append(f"Place {key} at position {j+1}")
         
-        # Center the window
-        status_window.transient(self.root)
-        status_window.grab_set()
-        
-        # Status content
-        content_frame = tk.Frame(status_window, bg=colors.get(msg_type, ModernStyle.COLORS['accent_primary']))
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
-        
-        message_label = tk.Label(content_frame, text=message,
-                                font=('Segoe UI', 12, 'bold'),
-                                fg='white',
-                                bg=colors.get(msg_type, ModernStyle.COLORS['accent_primary']),
-                                wraplength=350,
-                                justify=tk.CENTER)
-        message_label.pack(expand=True, pady=20)
-        
-        # OK button
-        ok_btn = tk.Button(content_frame, text="OK",
-                          font=('Segoe UI', 10, 'bold'),
-                          bg='white',
-                          fg=colors.get(msg_type, ModernStyle.COLORS['accent_primary']),
-                          relief='flat',
-                          bd=0,
-                          padx=20,
-                          pady=5,
-                          cursor='hand2',
-                          command=status_window.destroy)
-        ok_btn.pack(pady=(0, 20))
-        
-        # Auto-close after 3 seconds for success messages
-        if msg_type == 'success':
-            status_window.after(3000, status_window.destroy)
+        return steps
     
-    def show_modern_dialog(self, title, message, dialog_type):
-        """Show modern dialog with enhanced styling"""
-        dialog_window = tk.Toplevel(self.root)
-        dialog_window.title(title)
-        dialog_window.geometry("500x300")
-        dialog_window.configure(bg=ModernStyle.COLORS['bg_primary'])
-        dialog_window.resizable(True, True)
+    def open_prime_generator(self):
+        prime_window = tk.Toplevel(self.root)
+        prime_window.title("Prime Number Generator")
+        prime_window.geometry("800x650")
+        prime_window.configure(bg=self.colors['dark'])
         
-        # Center the window
-        dialog_window.transient(self.root)
-        dialog_window.grab_set()
+        header = tk.Label(prime_window,
+                         text="Prime Number Generator",
+                         font=('Arial', 20, 'bold'),
+                         fg=self.colors['light'],
+                         bg=self.colors['dark'])
+        header.pack(pady=20)
         
-        # Header
-        header_frame = tk.Frame(dialog_window, bg=ModernStyle.COLORS['bg_secondary'])
-        header_frame.pack(fill=tk.X, padx=10, pady=10)
+        input_frame = tk.Frame(prime_window, bg=self.colors['dark'])
+        input_frame.pack(pady=20)
         
-        header_label = tk.Label(header_frame, text=title,
-                               font=('Segoe UI', 16, 'bold'),
-                               fg=ModernStyle.COLORS['text_primary'],
-                               bg=ModernStyle.COLORS['bg_secondary'],
-                               pady=15)
-        header_label.pack()
+        tk.Label(input_frame,
+                text="Generate primes up to:",
+                font=('Arial', 12),
+                fg=self.colors['light'],
+                bg=self.colors['dark']).pack(side='left')
         
-        # Message content
-        message_text = scrolledtext.ScrolledText(
-            dialog_window,
-            font=('Segoe UI', 11),
-            bg=ModernStyle.COLORS['card_bg'],
-            fg=ModernStyle.COLORS['text_primary'],
-            relief='flat',
-            bd=0,
-            padx=20,
-            pady=20,
-            wrap=tk.WORD,
-            selectbackground=ModernStyle.COLORS['accent_primary']
-        )
-        message_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
-        message_text.insert(tk.END, message)
-        message_text.config(state='disabled')
+        self.prime_limit = tk.StringVar(value="100")
+        limit_entry = tk.Entry(input_frame, textvariable=self.prime_limit,
+                              width=10, font=('Arial', 12))
+        limit_entry.pack(side='left', padx=10)
         
-        # Close button
-        button_frame = tk.Frame(dialog_window, bg=ModernStyle.COLORS['bg_primary'])
-        button_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        button_frame = tk.Frame(prime_window, bg=self.colors['dark'])
+        button_frame.pack(pady=15)
         
-        close_btn = tk.Button(button_frame, text="Close",
-                             font=('Segoe UI', 10, 'bold'),
-                             bg=ModernStyle.COLORS['accent_primary'],
-                             fg='white',
-                             relief='flat',
-                             bd=0,
-                             padx=20,
-                             pady=8,
-                             cursor='hand2',
-                             command=dialog_window.destroy)
-        close_btn.pack(side=tk.RIGHT)
+        sieve_btn = ttk.Button(button_frame,
+                             text="Sieve of Eratosthenes",
+                             style='Custom.TButton',
+                             command=self.generate_primes_sieve)
+        sieve_btn.pack(side='left', padx=10)
+        
+        trial_btn = ttk.Button(button_frame,
+                             text="Trial Division",
+                             style='Secondary.TButton',
+                             command=self.generate_primes_trial)
+        trial_btn.pack(side='left', padx=10)
+        
+        check_btn = ttk.Button(button_frame,
+                             text="Check Single Number",
+                             style='Success.TButton',
+                             command=self.check_prime)
+        check_btn.pack(side='left', padx=10)
+        
+        self.prime_result = scrolledtext.ScrolledText(prime_window,
+                                                     height=20, width=90,
+                                                     bg=self.colors['card'],
+                                                     fg=self.colors['light'],
+                                                     font=('Arial', 10))
+        self.prime_result.pack(pady=20, padx=20, fill='both', expand=True)
+        
+        self.prime_result.insert('1.0',
+            "Prime Number Generator\n\n"
+            "Two algorithms available:\n\n"
+            "1. Sieve of Eratosthenes:\n"
+            "   - Most efficient for finding all primes up to a limit\n"
+            "   - Time complexity: O(n log log n)\n"
+            "   - Works by eliminating multiples of each prime\n\n"
+            "2. Trial Division:\n"
+            "   - Tests each number individually\n"
+            "   - Time complexity: O(n√n)\n"
+            "   - Good for checking individual numbers\n\n"
+            "Enter a limit and click on an algorithm to see it in action!")
     
-    def run(self):
-        """Start the application with modern styling"""
-        # Set window icon (if available)
+    def generate_primes_sieve(self):
         try:
-            self.root.iconname("Algorithm Challenge")
-        except:
-            pass
-        
-        # Center the main window
-        self.center_window()
-        
-        # Start the main loop
-        self.root.mainloop()
+            limit = int(self.prime_limit.get())
+            if limit < 2:
+                messagebox.showerror("Error", "Please enter a number >= 2")
+                return
+            
+            primes, steps = self.sieve_of_eratosthenes(limit)
+            
+            self.prime_result.delete('1.0', 'end')
+            self.prime_result.insert('1.0',
+                f"Sieve of Eratosthenes - Primes up to {limit}:\n\n"
+                f"Algorithm steps:\n")
+            
+            for step in steps[:15]:
+                self.prime_result.insert('end', f"{step}\n")
+            
+            if len(steps) > 15:
+                self.prime_result.insert('end', f"... and {len(steps) - 15} more steps\n")
+            
+            self.prime_result.insert('end',
+                f"\nFound {len(primes)} prime numbers:\n"
+                f"{', '.join(map(str, primes[:50]))}")
+            
+            if len(primes) > 50:
+                self.prime_result.insert('end', f"\n... and {len(primes) - 50} more primes")
+            
+            self.prime_result.insert('end',
+                f"\n\nLargest prime found: {max(primes) if primes else 'None'}")
+            
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid number!")
     
-    def center_window(self):
-        """Center the main window on screen"""
-        self.root.update_idletasks()
-        width = self.root.winfo_width()
-        height = self.root.winfo_height()
-        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.root.winfo_screenheight() // 2) - (height // 2)
-        self.root.geometry(f'{width}x{height}+{x}+{y}')
-
-def main():
-    """Main function to run the application"""
-    try:
-        app = AlgorithmChallengeApp()
-        app.run()
-    except Exception as e:
-        print(f"Error starting application: {e}")
-        messagebox.showerror("Error", f"Failed to start application: {e}")
+    def sieve_of_eratosthenes(self, limit):
+        if limit < 2:
+            return [], []
+        
+        sieve = [True] * (limit + 1)
+        sieve[0] = sieve[1] = False
+        steps = []
+        
+        for i in range(2, int(math.sqrt(limit)) + 1):
+            if sieve[i]:
+                steps.append(f"Marking multiples of {i}")
+                for j in range(i * i, limit + 1, i):
+                    sieve[j] = False
+        
+        primes = [i for i in range(2, limit + 1) if sieve[i]]
+        return primes, steps
+    
+    def generate_primes_trial(self):
+        try:
+            limit = int(self.prime_limit.get())
+            if limit < 2:
+                messagebox.showerror("Error", "Please enter a number >= 2")
+                return
+            
+            primes = []
+            steps = []
+            
+            for num in range(2, limit + 1):
+                if self.is_prime_trial(num):
+                    primes.append(num)
+                    steps.append(f"{num} is prime")
+                else:
+                    steps.append(f"{num} is not prime")
+                
+                if len(steps) > 100:
+                    break
+            
+            self.prime_result.delete('1.0', 'end')
+            self.prime_result.insert('1.0',
+                f"Trial Division - Primes up to {limit}:\n\n"
+                f"Algorithm: Test each number by dividing by all smaller primes\n\n"
+                f"Steps (showing first 100):\n")
+            
+            for step in steps[:20]:
+                self.prime_result.insert('end', f"{step}\n")
+            
+            self.prime_result.insert('end',
+                f"\nFound {len(primes)} prime numbers:\n"
+                f"{', '.join(map(str, primes[:50]))}")
+            
+            if len(primes) > 50:
+                self.prime_result.insert('end', f"\n... and {len(primes) - 50} more primes")
+            
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid number!")
+    
+    def is_prime_trial(self, n):
+        if n < 2:
+            return False
+        if n == 2:
+            return True
+        if n % 2 == 0:
+            return False
+        
+        for i in range(3, int(math.sqrt(n)) + 1, 2):
+            if n % i == 0:
+                return False
+        return True
+    
+    def check_prime(self):
+        try:
+            num = int(self.prime_limit.get())
+            if num < 2:
+                messagebox.showerror("Error", "Please enter a number >= 2")
+                return
+            
+            is_prime = self.is_prime_trial(num)
+            factors = []
+            
+            if not is_prime:
+                for i in range(2, int(math.sqrt(num)) + 1):
+                    if num % i == 0:
+                        factors.append(i)
+                        if i != num // i:
+                            factors.append(num // i)
+            
+            self.prime_result.delete('1.0', 'end')
+            
+            if is_prime:
+                self.prime_result.insert('1.0',
+                    f"Prime Check for {num}:\n\n"
+                    f"Result: {num} IS PRIME\n\n"
+                    f"Verification: Tested divisibility by all numbers from 2 to {int(math.sqrt(num))}\n"
+                    f"No divisors found, therefore {num} is prime.\n\n"
+                    f"Properties:\n"
+                    f"- Only divisible by 1 and {num}\n"
+                    f"- Cannot be expressed as a product of smaller integers")
+            else:
+                factors.sort()
+                self.prime_result.insert('1.0',
+                    f"Prime Check for {num}:\n\n"
+                    f"Result: {num} IS NOT PRIME\n\n"
+                    f"Factors found: {factors}\n"
+                    f"Prime factorization: {self.prime_factorization(num)}\n\n"
+                    f"Since {num} has factors other than 1 and itself, it is composite.")
+        
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid number!")
+    
+    def prime_factorization(self, n):
+        factors = []
+        d = 2
+        while d * d <= n:
+            while n % d == 0:
+                factors.append(d)
+                n //= d
+            d += 1
+        if n > 1:
+            factors.append(n)
+        
+        if len(factors) == 1:
+            return str(factors[0])
+        
+        factor_counts = {}
+        for factor in factors:
+            factor_counts[factor] = factor_counts.get(factor, 0) + 1
+        
+        result = []
+        for factor, count in sorted(factor_counts.items()):
+            if count == 1:
+                result.append(str(factor))
+            else:
+                result.append(f"{factor}^{count}")
+        
+        return " × ".join(result)
 
 if __name__ == "__main__":
-    main()
-   
-
-
-
-    # Message content
-        # message_text = scrolledtext.ScrolledText(
-        #     dialog_window,
-        #     font=('Segoe UI', 11),
-        #     bg=ModernStyle.COLORS['card_bg'],
-        #     fg=ModernStyle.COLORS['text_primary'],
-        #     relief='flat',
-        #     bd=0,
-        #     padx=20,
-        #     pady=20,
-        #     wrap=tk.WORD,
-        #     selectbackground=ModernStyle.COLORS['accent_primary']
-        # )
-       # Message content
-        # message_text = scrolledtext.ScrolledText(
-        #     dialog_window,
-        #     font=('Segoe UI', 11),
-        #     bg=ModernStyle.COLORS['card_bg'],
-        #     fg=ModernStyle.COLORS['text_primary'],
-        #     relief='flat',
-        #     bd=0,
-        #     padx=20,
-        #     pady=20,
-        #     wrap=tk.WORD,
-        #     selectbackground=ModernStyle.COLORS['accent_primary']
-        # )
-        # message_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
-        # message_text.insert(tk.END, message)
-        # message_text.config(state='disabled')
+    root = tk.Tk()
+    app = AlgorithmChallengeApp(root)
+    root.mainloop() = scrolledtext.ScrolledText(sort_window,
+                                                  height=12, width=100,
+                                                  bg=self.colors['card'],
+                                                  fg=self.colors['light'],
+                                                  font=('Arial', 10))
+        self.sort_info.pack(pady=20, padx=20, fill='both', expand=True)
         
+        self.sort_array = []
+        self.generate_sort_array()
+    
+    def generate_sort_array(self):
+        self.sort_array = [random.randint(10, 280) for _ in range(20)]
+        self.draw_array()
         
+        algorithm_info = {
+            "Bubble Sort": "Bubble Sort compares adjacent elements and swaps them if they're in wrong order.\nTime Complexity: O(n²), Space: O(1)\nBest for: Educational purposes, small datasets",
+            "Selection Sort": "Selection Sort finds the minimum element and places it at the beginning.\nTime Complexity: O(n²), Space: O(1)\nBest for: Small datasets, memory-constrained environments",
+            "Insertion Sort": "Insertion Sort builds the sorted array one element at a time.\nTime Complexity: O(n²), Space: O(1)\nBest for: Small datasets, nearly sorted data"
+        }
+        
+        self.sort_info
