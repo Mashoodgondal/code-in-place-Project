@@ -1062,3 +1062,13 @@ if __name__ == "__main__":
         #     algorithm_info.get(self.sort_algorithm.get(), '') + "\n\n"
         #     f"Generated array: {self.sort_array}\n\n"
         #     "Click 'Sort Array' to see the algorithm in action!")
+                # self.sort_info.insert('1.0',
+        #     f"Algorithm: {self.sort_algorithm.get()}\n\n"
+        #     algorithm_info.get(self.sort_algorithm.get(), '') + "\n\n"
+        #     f"Generated array: {self.sort_array}\n\n"
+        #     "Click 'Sort Array' to see the algorithm in action!")
+                # self.sort_info.insert('1.0',
+        #     f"Algorithm: {self.sort_algorithm.get()}\n\n"
+        #     algorithm_info.get(self.sort_algorithm.get(), '') + "\n\n"
+        #     f"Generated array: {self.sort_array}\n\n"
+        #     "Click 'Sort Array' to see the algorithm in action!")
