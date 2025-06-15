@@ -1077,3 +1077,12 @@ if __name__ == "__main__":
         #     algorithm_info.get(self.sort_algorithm.get(), '') + "\n\n"
         #     f"Generated array: {self.sort_array}\n\n"
         #     "Click 'Sort Array' to see the algorithm in action!")
+        # # print(reversed(str))
+# reverse = ''
+# for char in str:
+#     reverse = char + reverse
+    
+# if reverse == str:
+#     print("true")
+# else:
+#     print("false")
