@@ -1098,3 +1098,16 @@ if __name__ == "__main__":
 #     root = tk.Tk()
 #     app = AlgorithmChallengeApp(root)
 #     root.mainloop()
+
+#         self.sort_info.insert(tk.END, "\n\n".join(
+#             [f"{name}:\n{desc}" for name, desc in algorithm_info.items()]))
+
+#     def draw_array(self):
+#         # Add your array-drawing logic here, possibly using Canvas
+#         pass
+
+# # Run the app
+# if __name__ == "__main__":
+#     root = tk.Tk()
+#     app = AlgorithmChallengeApp(root)
+#     root.mainloop()
