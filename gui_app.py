@@ -1064,76 +1064,17 @@ if __name__ == "__main__":
 #         sort_window = tk.Frame(self.root)
 #         sort_window.pack(pady=20)
 
-#         # Scrolled Text for algorithm info
-#         self.sort_info = scrolledtext.ScrolledText(sort_window,
-#                                                    height=12, width=100,
-#                                                    bg=self.colors['card'],
-#                                                    fg=self.colors['light'],
-#                                                    font=('Arial', 10))
-#         self.sort_info.pack(pady=20, padx=20, fill='both', expand=True)
+# if __name__ == "__main__":
 
-#         # Array for sorting
-#         self.sort_array = []
-#         self.generate_sort_array()
-
-#     def generate_sort_array(self):
-#         self.sort_array = [random.randint(10, 280) for _ in range(20)]
-#         self.draw_array()
-
-#         algorithm_info = {
-#             "Bubble Sort": "Bubble Sort compares adjacent elements and swaps them if they're in wrong order.\nTime Complexity: O(n²), Space: O(1)\nBest for: Educational purposes, small datasets",
-#             "Selection Sort": "Selection Sort finds the minimum element and places it at the beginning.\nTime Complexity: O(n²), Space: O(1)\nBest for: Small datasets, memory-constrained environments",
-#             "Insertion Sort": "Insertion Sort builds the sorted array one element at a time.\nTime Complexity: O(n²), Space: O(1)\nBest for: Small datasets, nearly sorted data"
+#    class AlgorithmChallengeApp:
+#     def __init__(self, root):
+#         self.root = root
+#         self.root.title("Algorithm Visualizer")
+#         self.colors = {
+#             'card': '#2b2b2b',
+#             'light': '#ffffff'
 #         }
 
-#         self.sort_info.insert(tk.END, "\n\n".join(
-#             [f"{name}:\n{desc}" for name, desc in algorithm_info.items()]))
-
-#     def draw_array(self):
-#         # Add your array-drawing logic here, possibly using Canvas
-#         pass
-
-# # Run the app
-# if __name__ == "__main__":
-#     root = tk.Tk()
-#     app = AlgorithmChallengeApp(root)
-#     root.mainloop()
-
-#         self.sort_info.insert(tk.END, "\n\n".join(
-#             [f"{name}:\n{desc}" for name, desc in algorithm_info.items()]))
-
-#     def draw_array(self):
-#         # Add your array-drawing logic here, possibly using Canvas
-#         pass
-
-# # Run the app
-# if __name__ == "__main__":
-#     root = tk.Tk()
-#     app = AlgorithmChallengeApp(root)
-#     root.mainloop()
-
-#         self.sort_info.insert(tk.END, "\n\n".join(
-#             [f"{name}:\n{desc}" for name, desc in algorithm_info.items()]))
-
-#     def draw_array(self):
-#         # Add your array-drawing logic here, possibly using Canvas
-#         pass
-
-# # Run the app
-# if __name__ == "__main__":
-#     root = tk.Tk()
-#     app = AlgorithmChallengeApp(root)
-#     root.mainloop()
-
-#         self.sort_info.insert(tk.END, "\n\n".join(
-#             [f"{name}:\n{desc}" for name, desc in algorithm_info.items()]))
-
-#     def draw_array(self):
-#         # Add your array-drawing logic here, possibly using Canvas
-#         pass
-
-# # Run the app
-# if __name__ == "__main__":
-#     root = tk.Tk()
-#     app = AlgorithmChallengeApp(root)
-#     root.mainloop()
+#         # Sort window (can be a Frame or Toplevel)
+#         sort_window = tk.Frame(self.root)
+#         sort_window.pack(pady=20)
