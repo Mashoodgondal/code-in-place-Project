@@ -1082,3 +1082,37 @@ if __name__ == "__main__":
 #         # Sort window (can be a Frame or Toplevel)
 #         sort_window = tk.Frame(self.root)
 #         sort_window.pack(pady=20)
+
+#         # Sort window (can be a Frame or Toplevel)
+#         sort_window = tk.Frame(self.root)
+#         sort_window.pack(pady=20)
+
+# if __name__ == "__main__":
+
+#    class AlgorithmChallengeApp:
+#     def __init__(self, root):
+#         self.root = root
+#         self.root.title("Algorithm Visualizer")
+#         self.colors = {
+#             'card': '#2b2b2b',
+#             'light': '#ffffff'
+#         }
+
+#         # Sort window (can be a Frame or Toplevel)
+#         sort_window = tk.Frame(self.root)
+#         sort_window.pack(pady=20)
+
+# if __name__ == "__main__":
+
+#    class AlgorithmChallengeApp:
+#     def __init__(self, root):
+#         self.root = root
+#         self.root.title("Algorithm Visualizer")
+#         self.colors = {
+#             'card': '#2b2b2b',
+#             'light': '#ffffff'
+#         }
+
+#         # Sort window (can be a Frame or Toplevel)
+#         sort_window = tk.Frame(self.root)
+#         sort_window.pack(pady=20)
