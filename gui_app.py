@@ -232,12 +232,20 @@ Behind a moss-covered rock, you discover an old leather pouch!"""
             
             self.animated_print(f"You found: {Colors.BOLD + Colors.CYAN}{found_item}{Colors.RESET}!", 0.04, Colors.GREEN)
         else:
-            self.animated_print("You've already searched this area thoroughly.", 0.
-                                self.animated_print(failure_text, 0.04, Colors.RED)
-        self.state.health = max(10, self.state.health - 15)
-        
-        self.wait_for_input()
+            self.animated_print("You've already searched this area thoroughly.", 0.04)
+            self.animated_print(failure_text, 0.04, Colors.RED)
+            self.state.health = max(10, self.state.health - 15)
+
+            self.wait_for_input()
         return self.forest_crossroads()
+
+        # else:
+        #     self.animated_print("You've already searched this area thoroughly.", 0.
+        #                         self.animated_print(failure_text, 0.04, Colors.RED)
+        # self.state.health = max(10, self.state.health - 15)
+        
+        # self.wait_for_input()
+        # return self.forest_crossroads()
 
     def ancient_oak(self):
         self.clear_screen()
@@ -252,17 +260,30 @@ Carved into the bark are symbols that glow with a faint blue light.
 At the base of the tree, a magnificent sword is embedded in a stone,
 surrounded by a circle of smaller stones. The blade gleams silver
 even in the dappled forest light."""
-        
+          
         self.animated_print(story_text, 0.04, Colors.GREEN)
-        
+
         challenge_text = """A deep voice echoes from the tree itself:
 "To claim the Sword of Courage, you must prove your bravery.
 Choose your trial:
 - Face your greatest fear in combat
 - Sacrifice something precious for another's benefit
-- Stand guard over the forest's most vulnerable creatures""""
-        
+- Stand guard over the forest's most vulnerable creatures"
+"""
+
         self.animated_print(challenge_text, 0.04, Colors.CYAN)
+
+        
+#         self.animated_print(story_text, 0.04, Colors.GREEN)
+        
+#         challenge_text = """A deep voice echoes from the tree itself:
+# "To claim the Sword of Courage, you must prove your bravery.
+# Choose your trial:
+# - Face your greatest fear in combat
+# - Sacrifice something precious for another's benefit
+# - Stand guard over the forest's most vulnerable creatures""""
+        
+#         self.animated_print(challenge_text, 0.04, Colors.CYAN)
         
         print()
         choices = [
@@ -897,6 +918,15 @@ You achieved a HUMBLE ADVENTURER ENDING!"""
         self.show_title_screen()
         self.get_player_name()
         return self.forest_entrance()
+
+        class Colors:
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    RESET = '\033[0m'
+
+class AdventureGame:
+    def start_game(self):
+        print("Welcome to the Adventure Game!")
 
 def main():
     """Entry point for the game"""
